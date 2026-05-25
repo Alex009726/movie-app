@@ -214,7 +214,7 @@ function App() {
             <img
               src="/src/assets/logo.jpeg"
               alt="JDC Logo"
-              className="h-40 w-auto mb-10 animate-pulse"
+              className="h-60 w-auto mb-10 animate-pulse"
             />
             <div className="relative w-16 h-16">
               <div className="absolute inset-0 border-4 border-gray-600 rounded-full"></div>
