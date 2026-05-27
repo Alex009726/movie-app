@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Navbar from './Navbar'
 import MovieCard from './MovieCard'
+import splashLogo from './assets/logo.jpeg'   // ← Fixed logo import
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
@@ -207,12 +208,12 @@ function App() {
 
   return (
     <>
-      {/* SPLASH SCREEN */}
+      {/* SPLASH SCREEN - FIXED */}
       {loading && (
         <div className="fixed inset-0 bg-black z-[100] flex items-center justify-center">
           <div className="flex flex-col items-center">
             <img
-              src="/src/assets/logo.jpeg"
+              src={splashLogo}
               alt="JDC Logo"
               className="h-60 w-auto mb-10 animate-pulse"
             />
@@ -279,26 +280,22 @@ function App() {
               </div>
 
               {currentView === "home" ? (
-                loading ? (
-                  <p className="text-center text-2xl py-20">Loading movies...</p>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                      {movies.map(movie => (
-                        <MovieCard
-                          key={movie.id}
-                          movie={movie}
-                          toggleWatchlist={toggleWatchlist}
-                          isInWatchlist={isInWatchlist(movie.id)}
-                          onClick={() => openMovieDetail(movie)}
-                        />
-                      ))}
-                    </div>
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+                    {movies.map(movie => (
+                      <MovieCard
+                        key={movie.id}
+                        movie={movie}
+                        toggleWatchlist={toggleWatchlist}
+                        isInWatchlist={isInWatchlist(movie.id)}
+                        onClick={() => openMovieDetail(movie)}
+                      />
+                    ))}
+                  </div>
 
-                    {isLoadingMore && <p className="text-center py-10 text-lg">Loading more movies...</p>}
-                    {!hasMore && movies.length > 0 && <p className="text-center py-10 text-gray-500">You've reached the end 🎬</p>}
-                  </>
-                )
+                  {isLoadingMore && <p className="text-center py-10 text-lg">Loading more movies...</p>}
+                  {!hasMore && movies.length > 0 && <p className="text-center py-10 text-gray-500">You've reached the end 🎬</p>}
+                </>
               ) : (
                 <div>
                   <div className="flex justify-between items-center mb-8">
