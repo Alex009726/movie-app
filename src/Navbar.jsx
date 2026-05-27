@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import logo from './assets/logo.jpeg'   // ← This is the correct way
 
 export default function Navbar({ 
   setActiveCategory, 
@@ -20,15 +21,15 @@ export default function Navbar({
   }
 
   return (
-    <nav className="bg-gray-950 dark-mode:bg-black sticky top-0 z-50 border-b border-gray-800">
+    <nav className="bg-gray-950 dark:bg-black sticky top-0 z-50 border-b border-gray-800">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         
         {/* Custom Logo */}
         <div className="flex items-center gap-3">
           <img 
-            src="/src/assets/logo.jpeg" 
-            alt="Movie App Logo" 
-            className="h-30 w-auto object-contain"
+            src={logo} 
+            alt="JDC Movies Logo" 
+            className="h-20 w-auto object-contain"
           />
         </div>
 
