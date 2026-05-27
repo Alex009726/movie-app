@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import Navbar from './Navbar'
 import MovieCard from './MovieCard'
-import splashLogo from './assets/logo.jpeg'   // ← Fixed logo import
+import splashLogo from './assets/logo.jpeg'
+import AdUnit from './AdUnit'   // ← Ad component
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
@@ -80,9 +81,9 @@ function App() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
-  // Splash Screen with Logo
+  // Splash Screen
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 3200)
+    const timer = setTimeout(() => setLoading(false), 2500)
     return () => clearTimeout(timer)
   }, [])
 
@@ -137,7 +138,6 @@ function App() {
       .catch(() => setIsLoadingMore(false))
   }, [page, activeCategory, selectedGenre, hasMore, isLoadingMore, searchTerm])
 
-  // Infinite Scroll
   useEffect(() => {
     const handleScroll = () => {
       if (currentView !== "home" || searchTerm.length > 0) return
@@ -208,15 +208,10 @@ function App() {
 
   return (
     <>
-      {/* SPLASH SCREEN - FIXED */}
       {loading && (
         <div className="fixed inset-0 bg-black z-[100] flex items-center justify-center">
           <div className="flex flex-col items-center">
-            <img
-              src={splashLogo}
-              alt="JDC Logo"
-              className="h-60 w-auto mb-10 animate-pulse"
-            />
+            <img src={splashLogo} alt="JDC Logo" className="h-60 w-auto mb-10 animate-pulse" />
             <div className="relative w-16 h-16">
               <div className="absolute inset-0 border-4 border-gray-600 rounded-full"></div>
               <div className="absolute inset-0 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
@@ -263,6 +258,9 @@ function App() {
                         </div>
                       </div>
 
+                      {/* Top Banner Ad */}
+                      <AdUnit adCode="https://pl29567189.effectivecpmnetwork.com/29/92/dc/2992dc1f6fb087dc9c856288c4c0da23.js" title="Sponsored" />
+
                       <div className="flex flex-wrap gap-3 justify-center mb-10">
                         {categories.map(cat => (
                           <button key={cat.endpoint} onClick={() => { setActiveCategory(cat.endpoint); setSearchTerm(""); }} className={`px-6 py-3 rounded-full font-medium ${activeCategory === cat.endpoint ? 'bg-red-600 text-white' : 'bg-gray-200 dark-mode:bg-gray-800'}`}>{cat.name}</button>
@@ -282,14 +280,24 @@ function App() {
               {currentView === "home" ? (
                 <>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                    {movies.map(movie => (
-                      <MovieCard
-                        key={movie.id}
-                        movie={movie}
-                        toggleWatchlist={toggleWatchlist}
-                        isInWatchlist={isInWatchlist(movie.id)}
-                        onClick={() => openMovieDetail(movie)}
-                      />
+                    {movies.map((movie, index) => (
+                      <>
+                        <MovieCard
+                          key={movie.id}
+                          movie={movie}
+                          toggleWatchlist={toggleWatchlist}
+                          isInWatchlist={isInWatchlist(movie.id)}
+                          onClick={() => openMovieDetail(movie)}
+                        />
+
+                        {/* In-feed Ad every 6 movies */}
+                        {(index + 1) % 6 === 0 && (
+                          <AdUnit 
+                            adCode="https://www.highperformanceformat.com/3035eca599a838c2f35bf8e36fd2111c/invoke.js" 
+                            title="Advertisement" 
+                          />
+                        )}
+                      </>
                     ))}
                   </div>
 
@@ -329,10 +337,7 @@ function App() {
 
           {/* Back to Top Button */}
           {showBackToTop && (
-            <button
-              onClick={scrollToTop}
-              className="fixed bottom-8 right-8 bg-red-600 hover:bg-red-700 text-white p-4 rounded-full shadow-lg z-50 text-2xl"
-            >
+            <button onClick={scrollToTop} className="fixed bottom-8 right-8 bg-red-600 hover:bg-red-700 text-white p-4 rounded-full shadow-lg z-50 text-2xl">
               ↑
             </button>
           )}
