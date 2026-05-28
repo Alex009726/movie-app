@@ -48,6 +48,10 @@ function App() {
   const [trailerKey, setTrailerKey] = useState(null)
   const [detailLoading, setDetailLoading] = useState(false)
 
+  // ✅ NEW: Cast & Related Movies
+  const [cast, setCast] = useState([])
+  const [relatedMovies, setRelatedMovies] = useState([])
+
   // Dark Mode
   useEffect(() => {
     const saved = localStorage.getItem("theme")
@@ -165,11 +169,15 @@ function App() {
     }
   }
 
+  // ✅ UPDATED: openMovieDetail now also fetches cast and related movies
   const openMovieDetail = (movie) => {
     setSelectedMovie(movie)
     setDetailLoading(true)
     setTrailerKey(null)
+    setCast([])
+    setRelatedMovies([])
 
+    // Fetch trailer
     fetch(`https://api.themoviedb.org/3/movie/${movie.id}/videos?api_key=${API_KEY}`)
       .then(res => res.json())
       .then(data => {
@@ -178,11 +186,29 @@ function App() {
         setDetailLoading(false)
       })
       .catch(() => setDetailLoading(false))
+
+    // Fetch cast (credits)
+    fetch(`https://api.themoviedb.org/3/movie/${movie.id}/credits?api_key=${API_KEY}`)
+      .then(res => res.json())
+      .then(data => {
+        setCast(data.cast?.slice(0, 10) || []) // Top 10 actors
+      })
+      .catch(() => setCast([]))
+
+    // Fetch related/similar movies
+    fetch(`https://api.themoviedb.org/3/movie/${movie.id}/similar?api_key=${API_KEY}&page=1`)
+      .then(res => res.json())
+      .then(data => {
+        setRelatedMovies(data.results?.slice(0, 8) || []) // Top 8 related
+      })
+      .catch(() => setRelatedMovies([]))
   }
 
   const closeDetail = () => {
     setSelectedMovie(null)
     setTrailerKey(null)
+    setCast([])
+    setRelatedMovies([])
   }
 
   const toggleWatchlist = (movie) => {
@@ -344,31 +370,100 @@ function App() {
         </div>
       )}
 
-      {/* Movie Detail Modal */}
+      {/* ✅ UPDATED Movie Detail Modal with Cast & Related Movies */}
       {selectedMovie && (
         <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="bg-gray-900 w-full max-w-4xl rounded-2xl overflow-hidden max-h-[95vh] flex flex-col">
-            <div className="aspect-video bg-black">
+
+            {/* Trailer */}
+            <div className="aspect-video bg-black flex-shrink-0">
               {trailerKey ? (
                 <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`} title="Trailer" frameBorder="0" allowFullScreen></iframe>
               ) : detailLoading ? (
-                <div className="h-full flex items-center justify-center">Loading trailer...</div>
+                <div className="h-full flex items-center justify-center text-gray-400">Loading trailer...</div>
               ) : (
-                <div className="h-full flex items-center justify-center">No trailer available</div>
+                <div className="h-full flex items-center justify-center text-gray-400">No trailer available</div>
               )}
             </div>
 
+            {/* Scrollable content below trailer */}
             <div className="flex-1 overflow-y-auto p-5 sm:p-8">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl sm:text-4xl font-bold">{selectedMovie.title}</h2>
-                <button onClick={closeDetail} className="text-4xl text-gray-400 hover:text-white">✕</button>
-              </div>
-              <p className="text-yellow-400 text-lg sm:text-xl">⭐ {selectedMovie.vote_average?.toFixed(1)} • {selectedMovie.release_date}</p>
-              <p className="mt-6 text-gray-300 leading-relaxed text-base sm:text-lg">{selectedMovie.overview}</p>
 
-              <button onClick={() => toggleWatchlist(selectedMovie)} className="mt-8 w-full bg-red-600 hover:bg-red-700 py-4 rounded-xl text-lg font-medium">
+              {/* Title & Close */}
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-2xl sm:text-4xl font-bold text-white">{selectedMovie.title}</h2>
+                <button onClick={closeDetail} className="text-4xl text-gray-400 hover:text-white ml-4 flex-shrink-0">✕</button>
+              </div>
+
+              {/* Rating & Date */}
+              <p className="text-yellow-400 text-lg sm:text-xl mb-4">
+                ⭐ {selectedMovie.vote_average?.toFixed(1)} • {selectedMovie.release_date}
+              </p>
+
+              {/* Overview */}
+              <p className="text-gray-300 leading-relaxed text-base sm:text-lg mb-6">{selectedMovie.overview}</p>
+
+              {/* Watchlist Button */}
+              <button onClick={() => toggleWatchlist(selectedMovie)} className="w-full bg-red-600 hover:bg-red-700 py-4 rounded-xl text-lg font-medium text-white mb-8">
                 {isInWatchlist(selectedMovie.id) ? "❤️ Remove from Watchlist" : "♡ Add to Watchlist"}
               </button>
+
+              {/* ✅ Cast Section */}
+              {cast.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">🎭 Cast</h3>
+                  <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
+                    {cast.map(actor => (
+                      <div key={actor.id} className="flex-shrink-0 text-center w-20 sm:w-24">
+                        {actor.profile_path ? (
+                          <img
+                            src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
+                            alt={actor.name}
+                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover mx-auto mb-2 border-2 border-gray-700"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-700 mx-auto mb-2 flex items-center justify-center text-2xl">
+                            🎭
+                          </div>
+                        )}
+                        <p className="text-white text-xs font-semibold leading-tight">{actor.name}</p>
+                        <p className="text-gray-400 text-xs leading-tight mt-1">{actor.character}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ✅ Related Movies Section */}
+              {relatedMovies.length > 0 && (
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">🎬 Related Movies</h3>
+                  <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
+                    {relatedMovies.map(movie => (
+                      <div
+                        key={movie.id}
+                        onClick={() => openMovieDetail(movie)}
+                        className="flex-shrink-0 w-28 sm:w-36 cursor-pointer group"
+                      >
+                        {movie.poster_path ? (
+                          <img
+                            src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
+                            alt={movie.title}
+                            className="w-full rounded-xl object-cover mb-2 group-hover:scale-105 transition-transform duration-200 border-2 border-transparent group-hover:border-red-600"
+                          />
+                        ) : (
+                          <div className="w-full h-40 sm:h-48 bg-gray-800 rounded-xl mb-2 flex items-center justify-center text-3xl">
+                            🎬
+                          </div>
+                        )}
+                        <p className="text-white text-xs font-semibold text-center leading-tight line-clamp-2">{movie.title}</p>
+                        <p className="text-yellow-400 text-xs text-center mt-1">⭐ {movie.vote_average?.toFixed(1)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         </div>
