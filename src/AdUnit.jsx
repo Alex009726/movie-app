@@ -30,6 +30,8 @@ export default function AdUnit({ type = "banner" }) {
 
     if (!scriptSrc) return;
 
+    if (document.querySelector(`script[src="${scriptSrc}"]`)) return;
+
     const script = document.createElement('script');
     script.src = scriptSrc;
     script.async = true;
@@ -45,9 +47,9 @@ export default function AdUnit({ type = "banner" }) {
 
   return (
     <div className="my-8 py-4 border border-dashed border-gray-700 rounded-2xl text-center bg-gray-950">
-      <p className="text-xs text-gray-500 mb-3 tracking-widest uppercase">SPONSORED</p>
-      <div className="min-h-[90px] flex items-center justify-center">
-        {/* Ad will load here automatically */}
+      <p className="text-xs text-gray-500 mb-4 tracking-widest uppercase">SPONSORED</p>
+      <div className="min-h-[120px] flex items-center justify-center text-gray-400 text-sm" >
+        {/* Ad will be injected here */}
       </div>
     </div>
   );
